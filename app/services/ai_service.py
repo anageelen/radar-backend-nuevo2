@@ -6,7 +6,14 @@ from datetime import datetime
 
 class AIService:
     def __init__(self):
-        self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        api_key = os.getenv("OPENAI_API_KEY")
+        if api_key:
+            self.client = openai.OpenAI(api_key=api_key)
+            self.enabled = True
+        else:
+            self.client = None
+            self.enabled = False
+            print("⚠️  Warning: OPENAI_API_KEY not set. AI features will use fallback methods.")
     
     async def interpret_search_query(self, query: str) -> Dict[str, Any]:
         """Interpret natural language search query and generate filters"""
