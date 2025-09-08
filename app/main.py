@@ -164,11 +164,21 @@ MOCK_RESULTS = [
 
 @app.on_event("startup")
 async def startup_event():
-    create_tables()
+    try:
+        create_tables()
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Warning: Database initialization failed: {e}")
+        print("App will continue without database connectivity")
 
 @app.get("/healthz")
 async def healthz():
-    return {"status": "ok"}
+    """Health check endpoint that doesn't depend on database"""
+    return {
+        "status": "ok", 
+        "service": "RADAR Backend",
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 @app.post("/auth/login", response_model=AuthResponse)
 async def login(request: AuthRequest, db: Session = Depends(get_db)):
