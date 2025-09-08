@@ -6,6 +6,9 @@ import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./radar.db")
 
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
+
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
