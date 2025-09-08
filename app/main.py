@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import os
+import sys
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 
@@ -164,21 +165,34 @@ MOCK_RESULTS = [
 
 @app.on_event("startup")
 async def startup_event():
+    print("=== RADAR Backend Starting ===")
+    print(f"Python version: {sys.version}")
+    print(f"Environment: {os.getenv('ENVIRONMENT', 'development')}")
+    print(f"Port: {os.getenv('PORT', 'not set')}")
+    print(f"DATABASE_URL configured: {'Yes' if os.getenv('DATABASE_URL') else 'No'}")
+    
     try:
         create_tables()
-        print("Database tables created successfully")
+        print("✅ Database tables created successfully")
     except Exception as e:
-        print(f"Warning: Database initialization failed: {e}")
+        print(f"⚠️  Warning: Database initialization failed: {e}")
         print("App will continue without database connectivity")
+    
+    print("=== RADAR Backend Startup Complete ===")
 
 @app.get("/healthz")
 async def healthz():
     """Health check endpoint that doesn't depend on database"""
-    return {
+    print(f"🔍 Healthcheck requested at {datetime.utcnow().isoformat()}")
+    response = {
         "status": "ok", 
         "service": "RADAR Backend",
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
+        "environment": os.getenv('ENVIRONMENT', 'development'),
+        "port": os.getenv('PORT', 'not set')
     }
+    print(f"✅ Healthcheck response: {response}")
+    return response
 
 @app.post("/auth/login", response_model=AuthResponse)
 async def login(request: AuthRequest, db: Session = Depends(get_db)):
